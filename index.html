@@ -81,7 +81,7 @@
                         <span>↩️</span> Сбросить
                     </button>
                     <button id="save-btn" class="btn btn-primary">
-                        <span>💾</span> Сохранить
+                        <span>💾</span> Готово
                     </button>
                 </div>
 
@@ -95,6 +95,32 @@
             <p>Сделано с ❤️ для мамы</p>
         </footer>
     </div>
+
+    <!-- Модальное окно сохранения -->
+        <div id="save-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Сохранить фото</h2>
+
+                <div class="filename-input">
+                    <label for="filename-input">Название файла</label>
+                    <div class="input-with-ext">
+                        <input type="text" id="filename-input" placeholder="Введи название">
+                        <span class="ext" id="file-ext">.jpg</span>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button id="download-btn" class="btn btn-primary btn-full">
+                        <span>📥</span> Сохранить
+                    </button>
+                    <button id="email-btn" class="btn btn-secondary btn-full">
+                        <span>📧</span> Отправить по почте
+                    </button>
+                </div>
+
+                <button id="cancel-modal-btn" class="btn btn-text">Отмена</button>
+            </div>
+        </div>
 
     <!-- Скрытый canvas для обработки -->
     <canvas id="canvas" hidden></canvas>

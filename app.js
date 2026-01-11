@@ -21,7 +21,14 @@
         resetBtn: document.getElementById('reset-btn'),
         saveBtn: document.getElementById('save-btn'),
         newPhotoBtn: document.getElementById('new-photo-btn'),
-        quickBtns: document.querySelectorAll('.quick-btn')
+        quickBtns: document.querySelectorAll('.quick-btn'),
+        // Модальное окно
+        saveModal: document.getElementById('save-modal'),
+        filenameInput: document.getElementById('filename-input'),
+        fileExt: document.getElementById('file-ext'),
+        downloadBtn: document.getElementById('download-btn'),
+        emailBtn: document.getElementById('email-btn'),
+        cancelModalBtn: document.getElementById('cancel-modal-btn')
     };
 
     // === Состояние ===
@@ -268,11 +275,59 @@
         // Сброс
         elements.resetBtn.addEventListener('click', resetSize);
 
-        // Сохранить
-        elements.saveBtn.addEventListener('click', saveImage);
+        // Открыть модальное окно сохранения
+        elements.saveBtn.addEventListener('click', openSaveModal);
+
+        // Модальное окно
+        elements.downloadBtn.addEventListener('click', downloadImage);
+        elements.emailBtn.addEventListener('click', emailImage);
+        elements.cancelModalBtn.addEventListener('click', closeSaveModal);
+        elements.saveModal.addEventListener('click', (e) => {
+            if (e.target === elements.saveModal) closeSaveModal();
+        });
 
         // Новое фото
         elements.newPhotoBtn.addEventListener('click', resetToUpload);
+    }
+
+    // === Модальное окно ===
+    function openSaveModal() {
+        const width = parseInt(elements.widthInput.value) || state.originalWidth;
+        const height = parseInt(elements.heightInput.value) || state.originalHeight;
+
+        if (width <= 0 || height <= 0) {
+            alert('Укажи корректные размеры');
+            return;
+        }
+
+        // Предлагаем имя файла
+        const baseName = state.fileName.replace(/\.[^.]+$/, '');
+        elements.filenameInput.value = `${baseName}_${width}x${height}`;
+
+        // Показываем расширение
+        const ext = getFileExtension();
+        elements.fileExt.textContent = `.${ext}`;
+
+        elements.saveModal.classList.remove('hidden');
+        elements.filenameInput.focus();
+        elements.filenameInput.select();
+    }
+
+    function closeSaveModal() {
+        elements.saveModal.classList.add('hidden');
+    }
+
+    function getFileExtension() {
+        const ext = state.fileName.split('.').pop().toLowerCase();
+        if (ext === 'png') return 'png';
+        if (ext === 'webp') return 'webp';
+        return 'jpg';
+    }
+
+    function getFilename() {
+        const name = elements.filenameInput.value.trim() || 'image';
+        const ext = getFileExtension();
+        return `${name}.${ext}`;
     }
 
     function toggleAspectRatio() {
@@ -350,15 +405,10 @@
         updateSizeDisplay();
     }
 
-    // === Сохранение изображения ===
-    function saveImage() {
+    // === Создание изображения ===
+    function createResizedBlob(callback) {
         const width = parseInt(elements.widthInput.value) || state.originalWidth;
         const height = parseInt(elements.heightInput.value) || state.originalHeight;
-
-        if (width <= 0 || height <= 0) {
-            alert('Укажите корректные размеры');
-            return;
-        }
 
         const canvas = elements.canvas;
         const ctx = canvas.getContext('2d');
@@ -373,7 +423,7 @@
         ctx.drawImage(state.originalImage, 0, 0, width, height);
 
         // Определяем формат
-        const ext = state.fileName.split('.').pop().toLowerCase();
+        const ext = getFileExtension();
         let mimeType = 'image/jpeg';
         let quality = 0.92;
 
@@ -383,22 +433,68 @@
             mimeType = 'image/webp';
         }
 
-        // Скачиваем
-        canvas.toBlob((blob) => {
+        canvas.toBlob(callback, mimeType, quality);
+    }
+
+    // === Скачивание ===
+    function downloadImage() {
+        createResizedBlob((blob) => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-
-            // Формируем имя файла
-            const baseName = state.fileName.replace(/\.[^.]+$/, '');
-            const newFileName = `${baseName}_${width}x${height}.${ext === 'png' ? 'png' : ext === 'webp' ? 'webp' : 'jpg'}`;
+            const filename = getFilename();
 
             a.href = url;
-            a.download = newFileName;
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }, mimeType, quality);
+
+            closeSaveModal();
+        });
+    }
+
+    // === Отправка по почте ===
+    function emailImage() {
+        createResizedBlob((blob) => {
+            const filename = getFilename();
+
+            // На iOS можно использовать Web Share API для отправки файла
+            if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename)] })) {
+                const file = new File([blob], filename, { type: blob.type });
+                navigator.share({
+                    files: [file],
+                    title: filename
+                }).then(() => {
+                    closeSaveModal();
+                }).catch((err) => {
+                    console.log('Share cancelled or failed:', err);
+                    // Fallback - скачать и открыть почту
+                    fallbackEmail(blob, filename);
+                });
+            } else {
+                // Fallback для браузеров без Web Share API
+                fallbackEmail(blob, filename);
+            }
+        });
+    }
+
+    function fallbackEmail(blob, filename) {
+        // Сначала скачиваем файл
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Потом открываем почту
+        setTimeout(() => {
+            window.location.href = 'mailto:?subject=' + encodeURIComponent('Фото: ' + filename) + '&body=' + encodeURIComponent('Прикрепи скачанный файл ' + filename);
+            closeSaveModal();
+        }, 500);
     }
 
     // === Сброс к загрузке ===
