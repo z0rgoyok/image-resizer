@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#FFF5EB">
+    <title>Изменить размер фото</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖼️ Изменить размер фото</h1>
+        </header>
+
+        <main>
+            <!-- Шаг 1: Загрузка -->
+            <section id="upload-section" class="card">
+                <label for="file-input" class="upload-area" id="upload-area">
+                    <span class="upload-icon">📷</span>
+                    <span class="upload-text">Нажми, чтобы выбрать фото</span>
+                    <span class="upload-hint">или перетащи сюда</span>
+                </label>
+                <input type="file" id="file-input" accept="image/*,.heic,.heif" hidden>
+            </section>
+
+            <!-- Шаг 2: Редактирование -->
+            <section id="editor-section" class="card hidden">
+                <div class="preview-container">
+                    <img id="preview" alt="Предпросмотр">
+                </div>
+
+                <div class="info-bar">
+                    <span id="original-size">Было: —</span>
+                    <span id="new-size">Стало: —</span>
+                </div>
+
+                <div class="controls">
+                    <div class="size-inputs">
+                        <div class="input-group">
+                            <label for="width-input">Ширина</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="width-input" min="1" max="10000" placeholder="ширина">
+                                <span class="unit">px</span>
+                            </div>
+                        </div>
+
+                        <button id="link-btn" class="link-button active" title="Сохранять пропорции">
+                            <span class="link-icon">🔗</span>
+                        </button>
+
+                        <div class="input-group">
+                            <label for="height-input">Высота</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="height-input" min="1" max="10000" placeholder="высота">
+                                <span class="unit">px</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="proportions-hint" id="proportions-hint">
+                        🔗 Пропорции сохраняются
+                    </div>
+
+                    <div class="quick-sizes">
+                        <span class="quick-label">Быстрый выбор:</span>
+                        <div class="quick-buttons">
+                            <button class="quick-btn" data-height="1000">↕ 1000</button>
+                            <button class="quick-btn" data-scale="0.5">50%</button>
+                            <button class="quick-btn" data-scale="0.25">25%</button>
+                            <button class="quick-btn" data-width="1200">↔ 1200</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button id="reset-btn" class="btn btn-secondary">
+                        <span>↩️</span> Сбросить
+                    </button>
+                    <button id="save-btn" class="btn btn-primary">
+                        <span>💾</span> Сохранить
+                    </button>
+                </div>
+
+                <button id="new-photo-btn" class="btn btn-text">
+                    📷 Выбрать другое фото
+                </button>
+            </section>
+        </main>
+
+        <footer>
+            <p>Сделано с ❤️ для мамы</p>
+        </footer>
+    </div>
+
+    <!-- Скрытый canvas для обработки -->
+    <canvas id="canvas" hidden></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
