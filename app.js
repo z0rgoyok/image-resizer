@@ -514,6 +514,85 @@
         elements.uploadSection.classList.remove('hidden');
     }
 
+    // === PWA установка ===
+    let deferredPrompt = null;
+
+    function setupPWA() {
+        // Регистрируем Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => {
+                console.log('SW registration failed:', err);
+            });
+        }
+
+        const banner = document.getElementById('install-banner');
+        const installBtn = document.getElementById('install-btn');
+        const dismissBtn = document.getElementById('install-dismiss');
+
+        // Проверяем, не установлено ли уже и не скрыта ли плашка
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+        const isDismissed = localStorage.getItem('pwa-dismissed');
+
+        if (isStandalone || isDismissed) {
+            return;
+        }
+
+        // Для Android/Chrome - ловим beforeinstallprompt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallBanner();
+        });
+
+        // Для iOS - показываем инструкцию
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+
+        if (isIOS && isSafari && !isStandalone) {
+            // Показываем через небольшую задержку
+            setTimeout(() => {
+                showInstallBanner(true);
+            }, 2000);
+        }
+
+        installBtn.addEventListener('click', () => handleInstall());
+        dismissBtn.addEventListener('click', () => dismissBanner());
+    }
+
+    function showInstallBanner(isIOS = false) {
+        const banner = document.getElementById('install-banner');
+        const text = banner.querySelector('.install-text');
+        const btn = document.getElementById('install-btn');
+
+        if (isIOS) {
+            text.innerHTML = 'Нажми <strong>Поделиться</strong> <span style="font-size:1.1em">⎙</span> → <strong>На экран Домой</strong>';
+            btn.style.display = 'none';
+        }
+
+        banner.classList.remove('hidden');
+        document.body.classList.add('has-install-banner');
+    }
+
+    function handleInstall() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((result) => {
+                deferredPrompt = null;
+                dismissBanner();
+            });
+        }
+    }
+
+    function dismissBanner() {
+        const banner = document.getElementById('install-banner');
+        banner.classList.add('hidden');
+        document.body.classList.remove('has-install-banner');
+        localStorage.setItem('pwa-dismissed', '1');
+    }
+
     // === Запуск ===
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        setupPWA();
+    });
 })();

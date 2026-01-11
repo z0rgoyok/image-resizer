@@ -6,11 +6,26 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#FFF5EB">
+    <meta name="apple-mobile-web-app-title" content="Фото">
     <title>Изменить размер фото</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" type="image/png" href="icon-192.png">
 </head>
 <body>
+    <!-- Плашка установки PWA -->
+    <div id="install-banner" class="install-banner hidden">
+        <div class="install-content">
+            <span class="install-icon">📲</span>
+            <span class="install-text">Добавь на домашний экран для быстрого доступа</span>
+        </div>
+        <div class="install-actions">
+            <button id="install-btn" class="install-action-btn">Добавить</button>
+            <button id="install-dismiss" class="install-dismiss">✕</button>
+        </div>
+    </div>
+
     <div class="container">
         <header>
             <h1>🖼️ Изменить размер фото</h1>
