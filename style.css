@@ -479,6 +479,48 @@ footer {
     width: 100%;
 }
 
+/* === Плашка обновления === */
+.update-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--secondary);
+    color: white;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 100;
+    font-size: 0.95rem;
+    animation: slideDown 0.3s ease;
+}
+
+.update-banner.hidden {
+    display: none;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.update-banner button {
+    background: white;
+    color: var(--secondary);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
 /* === Плашка установки PWA === */
 .install-banner {
     position: fixed;

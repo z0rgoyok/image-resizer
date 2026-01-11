@@ -516,14 +516,43 @@
 
     // === PWA установка ===
     let deferredPrompt = null;
+    let newWorker = null;
 
     function setupPWA() {
         // Регистрируем Service Worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js').catch(err => {
+            navigator.serviceWorker.register('sw.js').then(reg => {
+                // Проверяем обновления при загрузке
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // Новая версия готова
+                            showUpdateBanner();
+                        }
+                    });
+                });
+            }).catch(err => {
                 console.log('SW registration failed:', err);
             });
+
+            // Перезагружаем страницу когда новый SW взял контроль
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
         }
+
+        // Кнопка обновления
+        const updateBtn = document.getElementById('update-btn');
+        updateBtn.addEventListener('click', () => {
+            if (newWorker) {
+                newWorker.postMessage('skipWaiting');
+            }
+        });
 
         const banner = document.getElementById('install-banner');
         const installBtn = document.getElementById('install-btn');
@@ -588,6 +617,11 @@
         banner.classList.add('hidden');
         document.body.classList.remove('has-install-banner');
         localStorage.setItem('pwa-dismissed', '1');
+    }
+
+    function showUpdateBanner() {
+        const banner = document.getElementById('update-banner');
+        banner.classList.remove('hidden');
     }
 
     // === Запуск ===
